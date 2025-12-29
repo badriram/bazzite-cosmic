@@ -60,12 +60,14 @@ jobs:
         image:
           - bazzite
           - bazzite-gnome
+          - bazzite-cosmic
           - bazzite-deck
           - bazzite-deck-gnome
           - bazzite-deck-nvidia
           - bazzite-deck-nvidia-gnome
           - bazzite-nvidia
           - bazzite-gnome-nvidia
+          - bazzite-cosmic-nvidia
           - bazzite-nvidia-open
           - bazzite-gnome-nvidia-open
         include:
@@ -85,6 +87,8 @@ jobs:
           IMAGE="${{ matrix.image }}"
           if [[ "$IMAGE" == *gnome* ]]; then
             BASE_IMAGE_NAME="silverblue"
+          elif [[ "$IMAGE" == *cosmic* ]]; then
+            BASE_IMAGE_NAME="cosmic"
           else
             BASE_IMAGE_NAME="kinoite"
           fi
@@ -125,7 +129,12 @@ jobs:
           echo "push_registry=${PUSH_REGISTRY}" >> $GITHUB_OUTPUT
           echo "pull_registry=${PULL_REGISTRY}" >> $GITHUB_OUTPUT
           echo "output_image=${PUSH_REGISTRY}/${{ matrix.image }}" >> $GITHUB_OUTPUT
-          BASE_IMAGE="${PULL_REGISTRY}/$BASE_IMAGE_NAME-${{ matrix.base_image_flavor }}:${{ matrix.fedora_version }}"
+          # COSMIC uses official Fedora image, others use ublue-os
+          if [[ "$BASE_IMAGE_NAME" == "cosmic" ]]; then
+            BASE_IMAGE="quay.io/fedora-ostree-desktops/cosmic-atomic:${{ matrix.fedora_version }}"
+          else
+            BASE_IMAGE="${PULL_REGISTRY}/$BASE_IMAGE_NAME-${{ matrix.base_image_flavor }}:${{ matrix.fedora_version }}"
+          fi
           echo "base_image=${BASE_IMAGE}" >> $GITHUB_OUTPUT
 
           if [ "${{ github.event.inputs.fresh-rechunk }}" == "true" ]; then
